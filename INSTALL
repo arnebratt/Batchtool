@@ -1,0 +1,185 @@
+Batch Tool
+
+o What is the Batch Tool extension?
+
+This is a command line utility to do the same operations on lots of 
+selected objects/nodes. For instance to move, copy or delete a bunch of
+nodes. It is based on filters that fetches the objects to operate on, 
+utilizing the fetch functions in eZ Publish for a flexible selection of 
+objects.
+
+This is intended as a command line tool, allthough I've set it up as a 
+cronjob in case that could come in handy for some tasks.
+
+This extension can really mess up your database, you are highly 
+encourraged to make a backup before starting!
+
+
+o License
+
+GNU General Public License v2.0
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of version 2.0  of the GNU General
+Public License as published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+
+o Requirements
+
+Developed and tested on eZ Publish version 4.0.1.
+Should in theory work on most versions from 3.9 and up, maybe also earlier,
+depending on functions that are used in the filters and operations.
+
+
+o Installing Batch Tool extension
+
+Extract extension to the extension/batchtool/ directory.
+Activate the new extension by adding it in 
+settings/override/site.ini.append.php like this:
+[ExtensionSettings]
+ActiveExtensions[]=batchtool
+
+
+o Using the Batch Tool extension
+
+Back up your database!
+
+Run the tool from command line like this:
+php runcronjobs.php batchtool [--and] [--or] --filter="<filter>" [--filter="<filter>"] [...] --operation="<operation>" [--operation="<operation>"] [...]
+
+--filter: Specifies a filter name and potential parameters for it
+--operation: Specifies an operation name and potential parameters for it
+--or: Creates a logical OR operation between filters (default)
+--and: Creates a logical AND operation between filters
+
+The format of filter and operation parameters are as follows:
+"<filter/operation name>;<parameter name1>=<value1>;<parameter name2>=<value2>;..."
+
+From command line the quotes must be included, or the shell will 
+interpret the semicolons.
+
+The filter and operation names must be specified in the following 
+íni file to be accepted:
+extension/batchtool/settings/batchtool.ini.append.php
+
+[BatchToolSettings]
+FilterList[]=<filter name>
+OperationList[]=<operation name>
+
+The filters fetches the selected objects, specifying which objects 
+to work on. There can be any number of filters, and each filter 
+returns a set of objects. The objects are then combined to set up 
+the object list that should be processed by the operations in this 
+job. The combining of objects can be done by a logical AND or a 
+logical OR operation. This is specified with the --and or --or
+parameters. Combining --and and --or in one command is not possible,
+if --and is specified anywhere it will have priority.
+
+From the object resultset of the filtering, the specified operations 
+are then given one object at a time, and processes each one of them 
+in the same manner. As with filters there can be any number of 
+operations, and each one of them will be used in specified order on 
+each object.
+
+In a given command, all of the specified filters must return the same
+kind of objects. It is not possible to combine nodes and contentobjects
+in the same command, for instance. Also, all of the specified 
+operations in the same command must be made for the same kind of 
+objects that the filters return. Otherwise an error message will be
+displayed.
+
+
+o Example
+
+A test operation named "nodelistname" is included. This operation makes 
+no changes to the database, it just prints out the names of every 
+selected node. To run it, use for instance the following command:
+
+php runcronjobs.php batchtool --filter="fetchnodelist;parent=2;classname=folder:frontpage;limit=5" --operation="nodelistname"
+
+The "fetchnodelist" filter takes four parameters:
+parent - specifies parent node to fetch nodes from
+classname - specifies class names to include in fetch (separated by ":")
+limit - specifies maximum number of nodes to list
+offset - specifies starting offset number in the row of nodes to fetch
+
+In our example the filter fetches the five first nodes under node id 2 
+of class folder or frontpage, and then prints out their names.
+
+Another example, here we combine two similar filters to produce a set 
+of nodes. The filters only discriminate on class names, so the resulting
+nodeset will be the same as before. Notice that the operation is done
+only one time on each node, specifying number of duplicates.
+
+php runcronjobs.php batchtool --filter="fetchnodelist;parent=2;classname=folder:frontpage;limit=5" --filter="fetchnodelist;parent=2;classname=folder;limit=5" --operation="nodelistname"
+
+If we add the --and parameter on the same command, only nodes that 
+is returned from both filters will be used.
+
+php runcronjobs.php batchtool --and --filter="fetchnodelist;parent=2;classname=folder:frontpage;limit=5" --filter="fetchnodelist;parent=2;classname=folder;limit=5" --operation="nodelistname"
+
+In the following example, we use the nodechangeattribute operation to
+trim the names of the fetched nodes. The value from the content object
+attribute called 'name' is sent to the php function trim(), before a
+new object version is created and the trimmed name string is stored in 
+this new version.
+
+php runcronjobs.php batchtool --filter="fetchnodelist;parent=2;classname=folder:frontpage;limit=5" --operation="nodechangeattribute;attribute=name;phpfunc=trim;arguments={name}"
+
+Notice that the "arguments" parameter contains "{name}". This string will
+be replaced with the string contents of the name attribute in each object
+that is changed, before it is sent to the trim() function.
+
+
+o Extending the batch tool
+
+It is possible to add your own filters and operations. This is done by 
+adding a file under the filters/ or operations/ directory.
+
+Filters:
+
+Add a php class named "<filtername>Filter", where the filter name is the 
+same as the filename. The class can contain four functions:
+* getObjectList() - returns the object list to be operated on.
+* setParameters() - sets required and optional command line parameter 
+fields for this class.
+* getIDField() - returns a string specifying the ID attribute of the 
+objects that are returned in getObjectList().
+* getHelpText() - returns a string with help text for this filter
+
+See filters/fetchnodelist.php for an example.
+
+Operations:
+
+Add a php class named "<operationname>Operation", where the operation name 
+is the same as the filename. The class can contain four functions:
+* runOperation() - does the requested operation on each object.
+* setParameters() - sets required and optional command line parameter fields 
+for this class.
+* getClassName() - returns a string specifying the class name of the objects
+that this operation supports.
+* getHelpText() - returns a string with help text for this operation
+
+See operations/nodelistname.php for an example.
+
+
+o Troubleshooting
+
+With operations on a lot of nodes, there may be a problem with memory 
+exhaustion. How many nodes are possible will depend on the system 
+environment and what operations should be done on them.
+
+Try adding more memory in php.ini. If this doesn't work, use the limit 
+and offset parameters in the fetch to split up the operation in several 
+batches.
+
+
+o Credits
+
+Thanks to zurgutt on #ezpublish at irc.freenode.net, zurgutt@gmail.com,
+for lots of helpfull advice and hints on the development.
