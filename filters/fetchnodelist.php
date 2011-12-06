@@ -8,7 +8,7 @@ class fetchnodelistFilter
         return '
 --filter="fetchnodelist;parent=<parent>[;classname=<class id list>][;limit=<limit>][;offset=<offset>][;depth=<depth>][;ignore_visibility]"
 
-parent - The parent node id of the nodes you want to fetch
+parent - The parent node id of the nodes you want to fetch (required)
 classname - A list of class ids separated by a colon
 limit - Limit the total number of nodes to fetch
 offset - The offset value for the node in the list of nodes to fetch
@@ -35,7 +35,7 @@ ignore_visibility - Fetch also hidden nodes
             return 'Missing or illegal parent node id';
 
         // Store values of optional parameters
-        $this->limit = intval( $parm_array[ 'limit' ] );
+        $this->limit = isset( $parm_array[ 'limit' ] ) ? intval( $parm_array[ 'limit' ] ) : -1;
         $this->offset = intval( $parm_array[ 'offset' ] );
         $this->depth = intval( $parm_array[ 'depth' ] );
         if ( $this->depth == 0 )
@@ -57,15 +57,16 @@ ignore_visibility - Fetch also hidden nodes
     // which must correspond to the type of objects operations in a job is made for
     function getObjectList()
     {
-        return eZFunctionHandler::execute( 'content', 'list', 
-                array( 'parent_node_id' => $this->parent_node_id, 
+        $parameters = array( 'parent_node_id' => $this->parent_node_id, 
                         'class_filter_type' => 'include', 
                         'class_filter_array' => $this->class_filter,
-                        'limit' => $this->limit,
                         'offset' => $this->offset,
                         'depth' => $this->depth,
                         'ignore_visibility' => $this->ignore_visibility
-                        ) );
+                        );
+        if ( $this->limit > 0 )
+            $parameters['limit'] = $this->limit;
+        return eZFunctionHandler::execute( 'content', 'list', $parameters );
     }
 
     // Command line input parameters
