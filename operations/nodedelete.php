@@ -30,7 +30,8 @@ Any deleted content objects will be put in trash only if use_trash parameter is 
     // Delete the given node and, if it's the last node, it's object also
     function runOperation( &$object )
     {
-        return $object->removeNodeFromTree( $this->use_trash );
+        $object->removeNodeFromTree( $this->use_trash );
+        return true;
     }
 
     var $use_trash;
