@@ -229,10 +229,15 @@ foreach( $object_list as $object )
     }
 
     if ( $result )
+    {
         $changed_count++;
-    echo ( $result ) ? "Done operations on node $object_id\n" : "Operations failed on node $object_id\n";
+    }
+    if ( empty( $options['quiet'] ) )
+    {
+        echo ( $result ) ? "Done operations on node $object_id\n" : "Operations failed on node $object_id\n";
+    }
 }
 
-echo "$total_count nodes processed, $changed_count nodes successfull, $duplicate_count duplicates.\n";
+echo "$total_count objects processed, $changed_count objects successfull, $duplicate_count duplicates.\n";
 
 ?>

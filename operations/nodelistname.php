@@ -6,9 +6,12 @@ class nodelistnameOperation
     function getHelpText()
     {
         return '
---operation="nodelistname"
+--operation="nodelistname[;fields=<field identifier list][;delimiter=<delimiter characters>][;newline]"
 
 Prints out the name of the selected nodes, no changes are done on them.
+fields - If included, will also print the content of these attributes
+delimiter - One or more characters to separate multiple fields (";" by default)
+newline - Specifies if newline should be added to each line
 ';
     }
 
@@ -18,11 +21,17 @@ Prints out the name of the selected nodes, no changes are done on them.
     // Otherwise return true
     function setParameters( $parm_array )
     {
-        // Make sure no unsupported parameters are specified
-        foreach ( $parm_array as $name=>$value )
+        $supported_parameters = array( 'fields', 'delimiter', 'newline' );
+        $parm_keys = array_keys( $parm_array );
+        $unsupported_list = array_diff( $parm_keys, $supported_parameters );
+        if ( isset( $unsupported_list[0] ) )
         {
-            return "Unsupported parameter '$name' in operation";
+            return "Unsupported parameter '{$unsupported_list[0]}' in filter";
         }
+
+        $this->fields = isset( $parm_array[ 'fields' ] ) ? explode( ':', $parm_array[ 'fields' ] ) : array();
+        $this->delimiter = isset( $parm_array[ 'delimiter' ] ) ? $parm_array[ 'delimiter' ] : ';';
+        $this->newline = isset( $parm_array[ 'newline' ] );
 
         return true;
     }
@@ -39,11 +48,45 @@ Prints out the name of the selected nodes, no changes are done on them.
     // Returns true if successfull, false otherwise
     // If false is returned, any following operations on this object will be aborted
     // and the program will continue on the next object
-    function runOperation( &$object )
+    function runOperation( &$node )
     {
-        echo $object->attribute( 'name' ).': ';
+        $data = array( $node->attribute( 'name' ) );
+        
+        if ( !empty( $this->fields ) )
+        {
+            $object = $node->attribute( 'object' );
+            $datamap = $object->datamap();
+            foreach ( $this->fields as $field )
+            {
+                if ( isset( $datamap[$field] ) )
+                {
+                    $data[] = $datamap[$field]->attribute( 'content' );
+                }
+                else
+                {
+                    if ( $object->hasAttribute( $field ) )
+                    {
+                        $data[] = $object->attribute( $field );
+                    }
+                    elseif ( $node->hasAttribute( $field ) )
+                    {
+                        $data[] = $node->attribute( $field );
+                    }
+                }
+            }
+        }
+        echo implode( $this->delimiter, $data );
+        if ( $this->newline )
+        {
+            echo "\n";
+        }
         return true;
     }
+
+    // Command line input parameters
+    var $fields;
+    var $delimiter;
+    var $newline;
 }
 
 ?>
