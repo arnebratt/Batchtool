@@ -27,18 +27,16 @@ state identifier -  Specify the iddentifier of the state to set on the content o
         if ( $state_group === false )
             return 'Missing or illegal state group identifier';
         $state_group_id = $state_group->attribute( 'id' );
-        $state = eZContentObjectState::fetchByIdentifier( $parm_array[ 'state_group' ], $state_group_id );
+        $state = eZContentObjectState::fetchByIdentifier( $parm_array[ 'state' ], $state_group_id );
         if ( $state === false )
             return 'Missing or illegal state identifier';
         $this->state_id = $state->attribute( 'id' );
         return true;
     }
 
-    // Move the given node to the specified target
-    // target_id - Node id of the node to move to
-    function runOperation( &$object )
+    function runOperation( &$node )
     {
-        eZContentOperationCollection::updateObjectState( $object->attribute( 'id' ), array( $this->state_id ) );
+        eZContentOperationCollection::updateObjectState( $node->attribute( 'contentobject_id' ), array( $this->state_id ) );
         return true;
     }
 

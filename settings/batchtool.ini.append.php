@@ -17,6 +17,7 @@ OperationList[]=nodechangeattribute
 OperationList[]=nodealwaysavailable
 OperationList[]=noderemovetranslation
 OperationList[]=nodeupdatenamepattern
+OperationList[]=nodesetstate
 
 # Specifies php or user functions available to do operations on attribute values (see nodechangeattribute operation)
 [NodeChangeAttribute]
