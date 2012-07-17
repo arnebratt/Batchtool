@@ -36,8 +36,8 @@ ignore_visibility - Fetch also hidden nodes
 
         // Store values of optional parameters
         $this->limit = isset( $parm_array[ 'limit' ] ) ? intval( $parm_array[ 'limit' ] ) : -1;
-        $this->offset = intval( $parm_array[ 'offset' ] );
-        $this->depth = intval( $parm_array[ 'depth' ] );
+        $this->offset = isset( $parm_array[ 'offset' ] ) ? intval( $parm_array[ 'offset' ] ) : 0;
+        $this->depth = isset( $parm_array[ 'depth' ] ) ? intval( $parm_array[ 'depth' ] ) : 1;
         if ( $this->depth == 0 )
             $this->depth = 1;
         $this->ignore_visibility = isset( $parm_array[ 'ignore_visibility' ] ) ? true : false;
