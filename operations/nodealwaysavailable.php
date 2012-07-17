@@ -14,11 +14,25 @@ available - Set node as available for all languages or not
 
     function setParameters( $parm_array )
     {
-        $this->available = ( $parm_array[ 'available' ] == 'true' ) ? 1 : -1;
-        if ( $parm_array[ 'available' ] == 'false' )
-            $this->available = 0;
-        if ( $this->available == -1 )
-            return 'Missing or illegal availability value';
+        if( !isset( $parm_array[ 'available' ] ) )
+        {
+            return 'Missing availability value';
+        }
+
+        switch( $parm_array[ 'available' ] )
+        {
+            case 'true':
+                $this->available = 1;
+                break;
+
+            case 'false':
+                $this->available = 0;
+                break;
+
+            default:
+                return 'Illegal availability value';
+        }
+
         return true;
     }
 
