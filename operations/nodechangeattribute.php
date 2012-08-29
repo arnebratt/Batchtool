@@ -73,14 +73,14 @@ arguments - Arguments sent to the selected function, separated by a colon.
             return false;
         }
 
-        $db =& eZDB::instance();
+        $db = eZDB::instance();
         $db->begin();
         // Create new version
         $content_object = $node->object();
         $content_object_id = $content_object->attribute( 'id' );
-        $version =& $content_object->createNewVersion();
+        $version = $content_object->createNewVersion();
         $version->setAttribute( 'modified', time() );
-        $version->setAttribute( 'status', EZ_VERSION_STATUS_DRAFT );
+        $version->setAttribute( 'status', 'EZ_VERSION_STATUS_DRAFT' );
         $version->store();
         $datamap = $version->dataMap();
 

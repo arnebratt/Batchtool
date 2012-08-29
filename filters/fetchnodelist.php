@@ -6,14 +6,15 @@ class fetchnodelistFilter
     function getHelpText()
     {
         return '
---filter="fetchnodelist;parent=<parent>[;classname=<class id list>][;limit=<limit>][;offset=<offset>][;depth=<depth>][;ignore_visibility]"
+--filter="fetchnodelist;parent=<parent>[;classname=<class id list>][;limit=<limit>][;offset=<offset>][;depth=<depth>][;ignore_visibility][;locales=<locale code list>]"
 
 parent - The parent node id of the nodes you want to fetch (required)
-classname - A list of class ids separated by a colon
+classname - A list of class identifiers separated by a colon
 limit - Limit the total number of nodes to fetch
 offset - The offset value for the node in the list of nodes to fetch
 depth - Max level of depth to fetch nodes from (default is current folder only)
 ignore_visibility - Fetch also hidden nodes
+locales - List of translation locale codes to filter on, separated by a colon (ex."nor-NO:eng-GB")
 ';
     }
 
@@ -23,7 +24,7 @@ ignore_visibility - Fetch also hidden nodes
     function setParameters( $parm_array )
     {
         // Make sure no unsupported parameters are specified
-        $supported_parameters = array( 'parent', 'classname', 'limit', 'offset', 'depth', 'ignore_visibility' );
+        $supported_parameters = array( 'parent', 'classname', 'limit', 'offset', 'depth', 'ignore_visibility', 'locales' );
         $parm_keys = array_keys( $parm_array );
         $unsupported_list = array_diff( $parm_keys, $supported_parameters );
         if ( isset( $unsupported_list[0] ) )
@@ -42,6 +43,7 @@ ignore_visibility - Fetch also hidden nodes
             $this->depth = 1;
         $this->ignore_visibility = isset( $parm_array[ 'ignore_visibility' ] ) ? true : false;
         $this->class_filter = isset( $parm_array['classname'] ) ? explode( ':', $parm_array['classname'] ) : array();
+        $this->locales = isset( $parm_array['locales'] ) ? explode( ':', $parm_array['locales'] ) : array();
         return true;
     }
     
@@ -65,7 +67,14 @@ ignore_visibility - Fetch also hidden nodes
                         'ignore_visibility' => $this->ignore_visibility
                         );
         if ( $this->limit > 0 )
+        {
             $parameters['limit'] = $this->limit;
+        }
+        if ( !empty( $this->locales ) )
+        {
+            $parameters['extended_attribute_filter'] = array( 'id' => 'TranslationsFilter',
+                                                              'params' => array( 'locales' => $this->locales ) );
+        }
         return eZFunctionHandler::execute( 'content', 'list', $parameters );
     }
 
@@ -76,6 +85,7 @@ ignore_visibility - Fetch also hidden nodes
     var $offset;
     var $depth;
     var $ignore_visibility;
+    var $locales;
 }
 
 ?>
