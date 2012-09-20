@@ -1,5 +1,5 @@
 <?php
-class ezdebugInfo
+class batchtoolInfo
 {
     static function info()
     {
