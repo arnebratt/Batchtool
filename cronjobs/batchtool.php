@@ -183,7 +183,7 @@ foreach( $filter_objects as $filter )
         }
         unset( $object_id_array );
     }
-    else
+    else if( is_array( $tmp_list ) )
     {
         $object_list = array_merge( $object_list, $tmp_list );
     }
