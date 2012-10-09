@@ -1,6 +1,6 @@
 <?php
 
-class nodealwaysavailableOperation
+class nodealwaysavailableOperation extends BatchToolOperation
 {
     // Return help text for this filter
     function getHelpText()
@@ -57,5 +57,3 @@ available - Set node as available for all languages or not
 
     var $available;
 }
-
-?>

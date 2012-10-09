@@ -1,6 +1,6 @@
 <?php
 
-class fetchnodelistFilter
+class fetchnodelistFilter extends BatchToolFilter
 {
     // Return help text for this filter
     function getHelpText()
@@ -47,13 +47,6 @@ locales - List of translation locale codes to filter on, separated by a colon (e
         return true;
     }
     
-    // Returns name of the ID attribute in the returned objects
-    // This function is not required, will return 'node_id' if not available
-    function getIDField()
-    {
-        return 'node_id';
-    }
-
     // Returns an array of objects to do operations on
     // All filters in a job must return the same type of objects,
     // which must correspond to the type of objects operations in a job is made for
@@ -87,5 +80,3 @@ locales - List of translation locale codes to filter on, separated by a colon (e
     var $ignore_visibility;
     var $locales;
 }
-
-?>

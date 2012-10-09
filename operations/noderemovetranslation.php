@@ -1,6 +1,6 @@
 <?php
 
-class noderemovetranslationOperation
+class noderemovetranslationOperation extends BatchToolOperation
 {
     // Return help text for this filter
     function getHelpText()
@@ -86,6 +86,3 @@ step 3. translation in remove_locale is removed
     var $altLocale;
     var $altLangID;
 }
-
-
-?>
