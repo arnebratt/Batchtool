@@ -72,28 +72,36 @@ arguments - Arguments sent to the selected function, separated by a colon.
             echo "Attribute '{$this->attribute}' not found. ";
             return false;
         }
-
-        $db =& eZDB::instance();
-        $db->begin();
-        // Create new version
-        $content_object = $node->object();
-        $content_object_id = $content_object->attribute( 'id' );
-        $version =& $content_object->createNewVersion();
-        $version->setAttribute( 'modified', time() );
-        $version->setAttribute( 'status', EZ_VERSION_STATUS_DRAFT );
-        $version->store();
-        $datamap = $version->dataMap();
+        $old_value = $object_attribute->toString();
 
         // Set new value to specified attributes
         $arg_array = $this->arguments;
-        foreach( $datamap as $key=>$object_attribute )
+        foreach( $datamap as $key => $object_attribute )
         {
             $value = $object_attribute->toString();
             $arg_array = str_replace( '{'.$key.'}', $value, $arg_array );
         }
-        $value = call_user_func_array( $this->change_function, $arg_array );
+        $new_value = call_user_func_array( $this->change_function, $arg_array );
+
+        if ( $new_value == $old_value )
+        {
+            // Nothing to change
+            return true;
+        }
+
+        $db = eZDB::instance();
+        $db->begin();
+        // Create new version
+        $content_object = $node->object();
+        $content_object_id = $content_object->attribute( 'id' );
+        $version = $content_object->createNewVersion();
+        $version->setAttribute( 'modified', time() );
+        $version->setAttribute( 'status', 'EZ_VERSION_STATUS_DRAFT' );
+        $version->store();
+        $datamap = $version->dataMap();
+
         $object_attribute = $datamap[$this->attribute];
-        $object_attribute->fromString( $value );
+        $object_attribute->fromString( $new_value );
         $object_attribute->store();
 
         // Publish new version
@@ -101,6 +109,7 @@ arguments - Arguments sent to the selected function, separated by a colon.
                                 array( 'object_id' => $content_object_id, 'version' => $version->attribute( 'version' ) ) );
         $db->commit();
         eZContentCacheManager::clearObjectViewCache( $content_object_id );
+
         return $operation_result['status'] == 1;
     }
 

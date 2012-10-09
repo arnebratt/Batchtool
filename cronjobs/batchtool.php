@@ -228,7 +228,7 @@ foreach( $object_list as $object )
     }
     if ( empty( $options['quiet'] ) )
     {
-        echo ( $result ) ? "Done operations on node $object_id\n" : "Operations failed on node $object_id\n";
+        echo ( $result ) ? "Done operations on object $object_id [$changed_count/$total_count]\n" : "Operations failed on object $object_id\n";
     }
 }
 
