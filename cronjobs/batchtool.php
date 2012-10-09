@@ -195,6 +195,7 @@ echo "Running operations on $total_count objects.\n";
 $changed_count = 0;
 $duplicate_count = 0;
 $object_id_array = array();
+
 foreach( $object_list as $object )
 {
     $object_id = $object->attribute( $idFieldName );
@@ -217,10 +218,18 @@ foreach( $object_list as $object )
     if ( $result )
     {
         $changed_count++;
+        if ( $changed_count % 100 == 0 )
+        {
+            // Clear content object cache sometimes, to avoid memory constipation
+            unset( $GLOBALS['eZContentObjectContentObjectCache'] );
+            unset( $GLOBALS['eZContentObjectDataMapCache'] );
+            unset( $GLOBALS['eZContentObjectVersionCache'] );
+        }
     }
     if ( empty( $options['quiet'] ) )
     {
-        echo ( $result ) ? "Done operations on object $object_id [$changed_count/$total_count]\n" : "Operations failed on object $object_id\n";
+        $mem = intval( memory_get_usage() / 1024 / 1024 );
+        echo ( $result ) ? "Done operations on object $object_id [$changed_count/$total_count] ($mem MB)\n" : "Operations failed on object $object_id\n";
     }
 }
 
