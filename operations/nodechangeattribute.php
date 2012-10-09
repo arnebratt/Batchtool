@@ -1,6 +1,6 @@
 <?php
 
-class nodechangeattributeOperation
+class nodechangeattributeOperation extends BatchToolOperation
 {
     // Return help text for this filter
     function getHelpText()
@@ -120,5 +120,3 @@ arguments - Arguments sent to the selected function, separated by a colon.
     // Arguments for the function (in an array)
     var $arguments;
 }
-
-?>
