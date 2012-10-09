@@ -1,6 +1,6 @@
 <?php
 
-class nodemoveOperation
+class nodemoveOperation extends BatchToolOperation
 {
     // Return help text for this filter
     function getHelpText()
@@ -55,5 +55,3 @@ move_to_depth - Depth of content tree to move the node up to. Must always be abo
     var $target_id;
     var $move_to_depth;
 }
-
-?>

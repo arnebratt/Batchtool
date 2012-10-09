@@ -1,6 +1,6 @@
 <?php
 
-class nodesetpriorityOperation
+class nodesetpriorityOperation extends BatchToolOperation
 {
     // Return help text for this filter
     function getHelpText()
@@ -43,5 +43,3 @@ interval - Interval value to add to start value for each node
     var $priority;
     var $interval;
 }
-
-?>

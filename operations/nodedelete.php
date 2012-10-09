@@ -1,6 +1,6 @@
 <?php
 
-class nodedeleteOperation
+class nodedeleteOperation extends BatchToolOperation
 {
     // Return help text for this filter
     function getHelpText()
@@ -36,5 +36,3 @@ Any deleted content objects will be put in trash only if use_trash parameter is 
 
     var $use_trash;
 }
-
-?>
