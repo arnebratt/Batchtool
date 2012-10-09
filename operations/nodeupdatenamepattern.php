@@ -1,6 +1,6 @@
 <?php
 
-class nodeupdatenamepatternOperation
+class nodeupdatenamepatternOperation extends BatchToolOperation
 {
     // Return help text for this filter
     function getHelpText()
@@ -26,13 +26,6 @@ Will update the name only if it has changed.
         }
 
         return true;
-    }
-    
-    // Returns class name of objects that this operation is made for
-    // This function is not required, will return 'eZContentObjectTreeNode' by default
-    function getClassName()
-    {
-        return 'eZContentObjectTreeNode';
     }
 
     // $node - The content object node to do operation on
@@ -68,5 +61,3 @@ Will update the name only if it has changed.
 
     var $pattern_array = array();
 }
-
-?>

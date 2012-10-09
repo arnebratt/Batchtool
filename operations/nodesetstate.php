@@ -1,6 +1,6 @@
 <?php
 
-class nodesetstateOperation
+class nodesetstateOperation extends BatchToolOperation
 {
     // Return help text for this filter
     function getHelpText()
@@ -42,5 +42,3 @@ state identifier -  Specify the iddentifier of the state to set on the content o
 
     var $state_id;
 }
-
-?>

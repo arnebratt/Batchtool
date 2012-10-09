@@ -6,6 +6,8 @@ include_once( 'lib/ezutils/classes/ezfunctionhandler.php' );
 include_once( 'kernel/classes/ezcontentobjecttreenodeoperations.php' );
 include_once( 'kernel/classes/ezcontentobjectoperations.php' );
 include_once( 'extension/batchtool/classes/lib.php' );
+include_once( 'extension/batchtool/classes/batchtooloperation.php' );
+include_once( 'extension/batchtool/classes/batchtoolfilter.php' );
 
 $standard_options = "[h|help][q|quiet][d;*|debug;*][c|colors][no-colors][logfiles][no-logfiles][s:|siteaccess:][l:|login:][p:|password:][v*|verbose*]";
 $script_options = "[f:|filter:*][o:|operation:*][and][or]";
@@ -47,35 +49,29 @@ foreach( $options['filter'] as $filter )
         echo "Error: Filter '$filter_name' not found in extension/batchtool/filters/$filter_name.php.\n";
         return;
     }
-    require_once( "extension/batchtool/filters/$filter_name.php" );
+
+    require_once( "extension/batchtool/filters/{$filter_name}.php" );
     $classname = "{$filter_name}Filter";
     $filter_obj = new $classname();
     $filter_objects[] = &$filter_obj;
-    if ( !method_exists( $filter_obj, 'getObjectList' ) )
+
+    if( !($filter_obj instanceof BatchToolFilter) )
     {
-        echo "Error: Filter '$filter_name' missing method getObjectList().\n";
+        echo "Class $classname does not extend BatchToolFilter as it should.\n";
         return;
     }
-    if ( method_exists( $filter_obj, 'setParameters' ) )
+
+    $result = $filter_obj->setParameters( getParameters( $parm_array ) );
+    if ( $result !== true )
     {
-        $result = $filter_obj->setParameters( getParameters( $parm_array ) );
-        if ( $result !== true )
-        {
-            echo "Error: Filter '$filter_name' have faulty parameters: '$result'.\n";
-            if ( method_exists( $filter_obj, 'getHelpText' ) )
-                echo $filter_obj->getHelpText();
-            return;
-        }
-    }
-    else
-    {
-        echo "Error: Filter '$filter_name' missing method setParameters().\n";
+        echo "Error: Filter '$filter_name' have faulty parameters: '$result'.\n";
+        echo $filter_obj->getHelpText();
         return;
     }
+
     if ( isset( $options['help'] ) )
     {
-        if ( method_exists( $filter_obj, 'getHelpText' ) )
-            echo $filter_obj->getHelpText();
+        echo $filter_obj->getHelpText();
     }
     unset( $filter_obj );
 }
@@ -95,35 +91,29 @@ foreach( $options['operation'] as $operation )
         echo "Error: Operation '$operation_name' not found in extension/batchtool/operations/.\n";
         return;
     }
-    require_once( "extension/batchtool/operations/$operation_name.php" );
+
+    require_once( "extension/batchtool/operations/{$operation_name}.php" );
     $classname = "{$operation_name}Operation";
     $op_obj = new $classname();
     $op_objects[] = &$op_obj;
-    if ( !method_exists( $op_obj, 'runOperation' ) )
+
+    if( !($op_obj instanceof BatchToolOperation) )
     {
-        echo "Error: Operation '$operation_name' missing method 'runOperation'.\n";
+        echo "Class $classname does not extend BatchToolOperation as it should.\n";
         return;
     }
-    if ( method_exists( $op_obj, 'setParameters' ) )
+
+    $result = $op_obj->setParameters( getParameters( $parm_array ) );
+    if ( $result !== true )
     {
-        $result = $op_obj->setParameters( getParameters( $parm_array ) );
-        if ( $result !== true )
-        {
-            echo "Error: Operation '$operation_name' have faulty parameters: $result.\n";
-            if ( method_exists( $op_obj, 'getHelpText' ) )
-                echo $op_obj->getHelpText();
-            return;
-        }
-    }
-    else
-    {
-        echo "Error: Operation '$operation_name' missing method setParameters().\n";
+        echo "Error: Operation '$operation_name' have faulty parameters: $result.\n";
+        echo $op_obj->getHelpText();
         return;
     }
+
     if ( isset( $options['help'] ) )
     {
-        if ( method_exists( $op_obj, 'getHelpText' ) )
-            echo $op_obj->getHelpText();
+        echo $op_obj->getHelpText();
     }
     unset( $op_obj );
 }
@@ -142,11 +132,7 @@ if ( empty( $filter_objects ) OR empty( $op_objects ) )
 }
 
 // Fetch the name of the ID field for our objects
-$idFieldName = 'node_id';
-if ( method_exists( $filter_objects[0], 'getIDField' ) )
-{
-    $idFieldName = $filter_objects[0]->getIDField();
-}
+$idFieldName = $filter_objects[0]->getIDField();
 
 // Run through all filters for this job
 $first_filter = true;
@@ -195,7 +181,7 @@ unset( $filter_objects );
 // Make sure all operations accept the object classes that have been fetched
 foreach( $op_objects as $operation )
 {
-    $class_name = ( method_exists( $operation, 'getClassName' ) ) ? $operation->getClassName() : 'eZContentObjectTreeNode';
+    $class_name = $operation->getClassName();
     if ( isset( $object_list[0] ) AND strcasecmp( get_class( $object_list[0] ), $class_name ) != 0 )
     {
         echo "Error: Operation not created for these object types.\n";
@@ -239,5 +225,3 @@ foreach( $object_list as $object )
 }
 
 echo "$total_count objects processed, $changed_count objects successfull, $duplicate_count duplicates.\n";
-
-?>

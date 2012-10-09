@@ -1,6 +1,6 @@
 <?php
  
-class nodeassignlocationsOperation
+class nodeassignlocationsOperation extends BatchToolOperation
 {
     // Return help text for this filter
     function getHelpText()
@@ -52,5 +52,3 @@ locations - a colon separated list of new parent nodes to assign to this node
  
     var $locations = array();
 }
- 
-?>

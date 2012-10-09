@@ -1,6 +1,6 @@
 <?php
 
-class nodecopyOperation
+class nodecopyOperation extends BatchToolOperation
 {
     // Return help text for this filter
     function getHelpText()
@@ -36,5 +36,3 @@ target - Node ID of the target node to copy selected nodes under
 
     var $target_id;
 }
-
-?>

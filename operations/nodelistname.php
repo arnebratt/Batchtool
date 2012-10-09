@@ -1,6 +1,6 @@
 <?php
 
-class nodelistnameOperation
+class nodelistnameOperation extends BatchToolOperation
 {
     // Return help text for this filter
     function getHelpText()
@@ -34,13 +34,6 @@ newline - Specifies if newline should be added to each line
         $this->newline = isset( $parm_array[ 'newline' ] );
 
         return true;
-    }
-    
-    // Returns class name of objects that this operation is made for
-    // This function is not required, will return 'eZContentObjectTreeNode' if not available
-    function getClassName()
-    {
-        return 'eZContentObjectTreeNode';
     }
 
     // Specifies an operation to be done on the filtered objects
@@ -88,5 +81,3 @@ newline - Specifies if newline should be added to each line
     var $delimiter;
     var $newline;
 }
-
-?>
