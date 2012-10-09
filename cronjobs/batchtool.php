@@ -102,8 +102,8 @@ foreach( $options['operation'] as $operation )
     $op_obj = new $classname();
     $op_objects[] = &$op_obj;
 
-    if( !($op_obj instanceof OperationInterface) ) {
-        echo "Class $classname does not implement OperationInterface.";
+    if( !($op_obj instanceof BatchToolOperation) ) {
+        echo "Class $classname does not extend BatchToolOperation as it should.\n";
         return;
     }
 

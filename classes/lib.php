@@ -285,5 +285,3 @@ function moveNode( $node, $new_parent_node_id )
 
     return eZContentObjectTreeNodeOperations::move( $node_id, $new_parent_node_id );
 }
-
-?>
