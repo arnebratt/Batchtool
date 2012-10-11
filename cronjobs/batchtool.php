@@ -196,6 +196,8 @@ $changed_count = 0;
 $duplicate_count = 0;
 $object_id_array = array();
 
+global $eZContentObjectDataMapCache;
+
 foreach( $object_list as $object )
 {
     $object_id = $object->attribute( $idFieldName );
@@ -231,6 +233,10 @@ foreach( $object_list as $object )
         $mem = intval( memory_get_usage() / 1024 / 1024 );
         echo ( $result ) ? "Done operations on object $object_id [$changed_count/$total_count] ($mem MB)\n" : "Operations failed on object $object_id\n";
     }
+
+    /* HACK - without any of these unsets PHP runs out of memory due to eZPublish bug */
+    unset($eZContentObjectDataMapCache[$object->object()->ID]);
+    unset($object->ContentObject);
 }
 
 echo "$total_count objects processed, $changed_count objects successfull, $duplicate_count duplicates.\n";
