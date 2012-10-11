@@ -237,7 +237,6 @@ foreach( $object_list as $object )
     /* HACK - without any of these unsets PHP runs out of memory due to eZPublish bug */
     unset($eZContentObjectDataMapCache[$object->object()->ID]);
     unset($object->ContentObject);
-    unset($GLOBALS);
 }
 
 echo "$total_count objects processed, $changed_count objects successfull, $duplicate_count duplicates.\n";
