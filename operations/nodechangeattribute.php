@@ -104,7 +104,7 @@ arguments - Arguments sent to the selected function, separated by a colon.
         // Create new version
         $content_object = $node->object();
         $content_object_id = $content_object->attribute( 'id' );
-        $version = $content_object->createNewVersion();
+        $version = $content_object->createNewVersion( false, true, $node->CurrentLanguage );
         $version->setAttribute( 'modified', time() );
         $version->setAttribute( 'status', 'EZ_VERSION_STATUS_DRAFT' );
         $version->store();
