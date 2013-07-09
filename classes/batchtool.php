@@ -13,6 +13,7 @@ class Batchtool
 
     public function __construct()
     {
+        $cli = eZCLI::instance();
         $standard_options = "[h|help][q|quiet][d;*|debug;*][c|colors][no-colors][logfiles][no-logfiles][s:|siteaccess:][l:|login:][p:|password:][v*|verbose*]";
         $script_options = "[f:|filter:*][o:|operation:*][and][or]";
         // Fetch all command line options
@@ -27,24 +28,27 @@ class Batchtool
 
         // Define filters and operations to combine
         $filter_list = $iniBT->variable( 'BatchToolSettings', 'FilterList' );
-        $this->filter_objects = $this->createCommandObjects( $options['filter'], $filter_list, 'BatchToolFilter' );
+        $this->filter_objects = $this->createCommandObjects( $options['filter'], $filter_list, false, isset( $options['help'] ) );
         $operations_list = $iniBT->variable( 'BatchToolSettings', 'OperationList' );
-        $this->operation_objects = $this->createCommandObjects( $options['operation'], $operations_list, 'BatchToolOperation' );
+        $this->operation_objects = $this->createCommandObjects( $options['operation'], $operations_list, true, isset( $options['help'] ) );
 
-        // If help requested, exit program here
+        // If help requested, exit program here (before objects are fetched)
         if ( isset( $options['help'] ) )
         {
-            exit 0;
+            return;
         }
 
         // Get objects requested by the specified filters
-        $this->$object_list = $this->getObjectsFromFilters();
+        $this->object_list = $this->getObjectsFromFilters();
         unset( $this->filter_objects );
     }
 
-    protected function createCommandObjects( $command_list, $enabled_list, $base_class )
+    protected function createCommandObjects( $command_list, $enabled_list, $is_operation, $need_help )
     {
+        $cli = eZCLI::instance();
         $command_objects = array();
+        $base_class = ( $is_operation ) ? 'BatchToolOperation' : 'BatchToolFilter';
+
         // Create filter objects and make basic checks
         foreach ( $command_list as $command )
         {
@@ -52,34 +56,30 @@ class Batchtool
             $command_name = $parameter_array[0];
             if ( !in_array( $command_name, $enabled_list ) )
             {
-                echo "Error: Command '$filter_name' not enabled in batchtool.ini.\n";
-                exit( 1 );
+                throw new Exception( "Command '$filter_name' not enabled in batchtool.ini." );
             }
-            $classname = "{$command_name}Filter";
+            $classname = $command_name . ( ( $is_operation ) ? "Operation" : "Filter" );
             if ( !class_exists( $classname ) )
             {
-                echo "Error: Command class '$classname' not found.\n";
-                exit( 2 );
+                throw new Exception( "Command class '$classname' not found." );
             }
             $command_object = new $classname();
 
             if( !( $command_object instanceof $base_class ) )
             {
-                echo "Class '$classname' does not extend '$base_class' as is required.\n";
-                exit( 3 );
+                throw new Exception( "Class '$classname' does not extend '$base_class' as is required." );
             }
 
-            $result = $command_object->setParameters( $this->getParameters( $parameter_array ) );
+            $result = $command_object->setParameters( $this->getParameters( array_slice( $parameter_array, 1 ) ) );
             if ( $result !== true )
             {
-                echo "Error: Filter '$command_name' have faulty parameters: '$result'.\n";
-                echo $command_object->getHelpText();
-                exit( 4 );
+                $cli->output( $command_object->getHelpText() );
+                throw new Exception( "Filter '$command_name' have faulty parameters: '$result'." );
             }
 
-            if ( isset( $options['help'] ) )
+            if ( $need_help )
             {
-                echo $command_object->getHelpText();
+                $cli->output( $command_object->getHelpText() );
             }
 
             $command_objects[] = $command_object;
@@ -88,8 +88,7 @@ class Batchtool
 
         if ( empty( $command_objects ) )
         {
-            echo "Error: No filters specified or no operations specified.\n";
-            exit( 5 );
+            throw new Exception( "No filters specified or no operations specified." );
         }
         return $command_objects;
     }
@@ -112,7 +111,7 @@ class Batchtool
     {
         $object_list = array();
         $is_first_filter = true;
-        $this->id_field_name = $filter_objects[0]->getIDField();
+        $this->id_field_name = $this->filter_objects[0]->getIDField();
 
         // Do the filters object fetch
         foreach ( $this->filter_objects as $filter )
@@ -130,8 +129,7 @@ class Batchtool
         {
             if ( get_class( $object ) != $object_class )
             {
-                echo "Error: Illegal mixing of different filter objects.\n";
-                exit( 6 );
+                throw new Exception( "Illegal mixing of different filter objects." );
             }
             if ( $options['and'] === true )
             {
@@ -146,13 +144,12 @@ class Batchtool
         }
 
         // Make sure all operations accept the object classes that have been fetched
-        foreach ( $this->$operation_objects as $operation )
+        foreach ( $this->operation_objects as $operation )
         {
             $operation_class = $operation->getClassName();
             if ( strcasecmp( $object_class, $operation_class ) != 0 )
             {
-                echo "Error: Operation not created for these object types.\n";
-                exit( 7 );
+                throw new Exception( "Operation not created for object types of class '$object_class'." );
             }
         }
         return $object_list;
@@ -160,8 +157,10 @@ class Batchtool
 
     public function runOperations()
     {
+        $cli = eZCLI::instance();
         $number_of_objects = count( $this->object_list );
-        echo "Running operations on $number_of_objects objects.\n";
+        $cli->output( "Running operations on $number_of_objects objects." );
+
         foreach( $this->object_list as $object )
         {
             $object_id = $object->attribute( $this->id_field_name );
@@ -186,7 +185,7 @@ class Batchtool
             if ( empty( $options['quiet'] ) )
             {
                 $mem = intval( memory_get_usage() / 1024 / 1024 );
-                echo ( $result ) ? "Done operations on object $object_id [$changed_count/$number_of_objects] ($mem MB)\n" : "Operations failed on object $object_id\n";
+                $cli->output( ( ( $result ) ? "Done operations" : "Operations failed" ) . " on object $object_id [{$this->total_count}/$number_of_objects] ($mem MB)" );
             }
         }
     }
@@ -206,7 +205,8 @@ class Batchtool
 
     public function summary()
     {
-        echo "{$this->total_count} objects processed, {$this->changed_count} objects successfull.\n";
+        $cli = eZCLI::instance();
+        $cli->output( "{$this->total_count} objects processed, {$this->changed_count} objects successfull." );
     }
 }
 
