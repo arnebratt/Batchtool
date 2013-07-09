@@ -171,20 +171,6 @@ function &createObject( $object_class_name, $parent_node_id, $import_field_list,
 }
 
 
-function getParameters( $parm_array )
-{
-    $res_array = array();
-    foreach( $parm_array as $parm )
-    {
-        $tmp = explode( '=', $parm );
-        if ( isset( $tmp[1] ) )
-            $res_array[$tmp[0]] = $tmp[1];
-        else
-            $res_array[$tmp[0]] = true;
-    }
-    return $res_array;
-}
-
 function copyObject( $object, $allVersions, $newParentNodeID )
 {
     if ( !$newParentNodeID )
