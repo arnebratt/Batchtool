@@ -6,8 +6,6 @@ class Batchtool
     var $operation_objects = array();
     var $object_list = array();
 
-    var $id_field_name = '';
-
     var $total_count = 0;
     var $changed_count = 0;
 
@@ -39,7 +37,7 @@ class Batchtool
         }
 
         // Get objects requested by the specified filters
-        $this->object_list = $this->getObjectsFromFilters();
+        $this->object_list = $this->getObjectsFromFilters( $options['and'] );
         unset( $this->filter_objects );
     }
 
@@ -107,52 +105,70 @@ class Batchtool
         return $result_array;
     }
 
-    protected function getObjectsFromFilters()
+    protected function getObjectsFromFilters( $is_logical_and )
     {
         $object_list = array();
+        $tmp_list = array();
         $is_first_filter = true;
-        $this->id_field_name = $this->filter_objects[0]->getIDField();
 
-        // Do the filters object fetch
+        // Do the filters object fetch, and merge from different filters
         foreach ( $this->filter_objects as $filter )
         {
-            $object_list = array_merge( $object_list, $filter->getObjectList() );
+            $tmp_list = $this->array_hashify( $filter->getObjectList(), $filter->getIDField() );
+            if ( !$is_first_filter AND $is_logical_and )
+            {
+                $object_list = array_intersect_key( $object_list, $tmp_list );
+            }
+            else
+            {
+                foreach ( $tmp_list as $key => $object )
+                {
+                    if ( !isset( $object_list[$key] ) )
+                    {
+                        $object_list[$key] = $object;
+                    }
+                }
+            }
+            $is_first_filter = false;
         }
         if ( empty( $object_list ) )
         {
             return array();
         }
-        // Validate and summarize objects
-        $object_class = get_class( $object_list[0] );
+        // Validate objects against object class
+        foreach ( $object_list as $object )
+        {
+            $object_class = get_class( $object );
+            break;
+        }
         $id_array = array();
-        foreach ( $object_list as $key => $object )
+        foreach ( $object_list as $object )
         {
             if ( get_class( $object ) != $object_class )
             {
                 throw new Exception( "Illegal mixing of different filter objects." );
-            }
-            if ( $options['and'] === true )
-            {
-                $id = $object->attribute( $this->id_field_name );
-                if ( isset( $id_array[$id] ) )
-                {
-                    // Remove duplicate object
-                    unset( $object_list[$key] );
-                }
-                $id_array[$id] = true;
             }
         }
 
         // Make sure all operations accept the object classes that have been fetched
         foreach ( $this->operation_objects as $operation )
         {
-            $operation_class = $operation->getClassName();
-            if ( strcasecmp( $object_class, $operation_class ) != 0 )
+            if ( strcasecmp( $object_class, $operation->getClassName() ) != 0 )
             {
                 throw new Exception( "Operation not created for object types of class '$object_class'." );
             }
         }
         return $object_list;
+    }
+
+    private function array_hashify( $object_list, $id_name )
+    {
+        $result = array();
+        foreach ( $object_list as $object )
+        {
+            $result[$object->attribute( $id_name )] = $object;
+        }
+        return $result;
     }
 
     public function runOperations()
@@ -161,10 +177,8 @@ class Batchtool
         $number_of_objects = count( $this->object_list );
         $cli->output( "Running operations on $number_of_objects objects." );
 
-        foreach( $this->object_list as $object )
+        foreach ( $this->object_list as $object_id => $object )
         {
-            $object_id = $object->attribute( $this->id_field_name );
-
             // Run through all operations for this job
             foreach( $this->operation_objects as $operation )
             {
