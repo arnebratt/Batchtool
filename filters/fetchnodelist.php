@@ -15,6 +15,7 @@ offset - The offset value for the node in the list of nodes to fetch
 depth - Max level of depth to fetch nodes from (default is current folder only)
 ignore_visibility - Fetch also hidden nodes
 locales - List of translation locale codes to filter on, separated by a colon (ex."nor-NO:eng-GB")
+          The first locales parameter can be an optional "or" or "and", to specify the logic between the languages (default is "or")
 ';
     }
 
@@ -65,8 +66,14 @@ locales - List of translation locale codes to filter on, separated by a colon (e
         }
         if ( !empty( $this->locales ) )
         {
+            $is_or_logic = true;
+            if ( $this->locales[0] == 'and' OR $this->locales[0] == 'or' )
+            {
+                $is_or_logic = !( array_shift( $this->locales ) == 'and' );
+            }
             $parameters['extended_attribute_filter'] = array( 'id' => 'TranslationsFilter',
-                                                              'params' => array( 'locales' => $this->locales ) );
+                                                              'params' => array( 'or' => $is_or_logic,
+                                                                                 'locales' => $this->locales ) );
         }
         return eZFunctionHandler::execute( 'content', 'list', $parameters );
     }
