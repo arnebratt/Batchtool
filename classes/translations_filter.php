@@ -9,6 +9,7 @@ class eZTranslationsFilter
     function createSqlParts( $params )
     {
         $sqlJoins = '';
+        $is_or_logic = isset( $params['or'] ) && ( $params['or'] === true );
 
         if ( isset( $params['locales'] ) )
         {
@@ -23,7 +24,8 @@ class eZTranslationsFilter
             }
             if ( $language_mask )
             {
-                $sqlJoins = " ezcontentobject.language_mask & $language_mask AND ";
+                $sqlJoins = ( $is_or_logic ) ? " ezcontentobject.language_mask & $language_mask AND " :
+                                               " ezcontentobject.language_mask & $language_mask = $language_mask AND ";
             }
         }
 
