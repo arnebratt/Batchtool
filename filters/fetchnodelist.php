@@ -6,7 +6,7 @@ class fetchnodelistFilter extends BatchToolFilter
     function getHelpText()
     {
         return '
---filter="fetchnodelist;parent=<parent>[;classname=<class id list>][;limit=<limit>][;offset=<offset>][;depth=<depth>][;ignore_visibility][;locales=<locale code list>]"
+--filter="fetchnodelist;parent=<parent>[;classname=<class id list>][;limit=<limit>][;offset=<offset>][;depth=<depth>][;ignore_visibility][;locales=<locale code list>][;attribute=<identifier>:<match_type>:<value>]"
 
 parent - The parent node id of the nodes you want to fetch (required)
 classname - A list of class identifiers separated by a colon
@@ -16,6 +16,7 @@ depth - Max level of depth to fetch nodes from (default is current folder only)
 ignore_visibility - Fetch also hidden nodes
 locales - List of translation locale codes to filter on, separated by a colon (ex."nor-NO:eng-GB")
           The first locales parameter can be an optional "or" or "and", to specify the logic between the languages (default is "or")
+attribute - Filter on attribute values
 ';
     }
 
@@ -45,6 +46,21 @@ locales - List of translation locale codes to filter on, separated by a colon (e
         $this->ignore_visibility = isset( $parm_array[ 'ignore_visibility' ] ) ? true : false;
         $this->class_filter = isset( $parm_array['classname'] ) ? explode( ':', $parm_array['classname'] ) : array();
         $this->locales = isset( $parm_array['locales'] ) ? explode( ':', $parm_array['locales'] ) : array();
+
+        // Attribute filter
+        $attribute_filter = isset( $parm_array['attribute'] ) ? explode( ':', $parm_array['attribute'] ) : array();
+        if ( count( $attribute_filter ) == 3 )
+        {
+            if ( !in_array( $attribute_filter[1], array( '=', '!=', '<', '>', '<=', '>=', 'in', 'not_in', 'between', 'not_betweem', 'like' ) ) )
+            {
+                return 'Illegal match type parameter to attribute filter';
+            }
+            $this->attribute_filter = $attribute_filter;
+        }
+        else if ( !empty( $attribute_filter ) )
+        {
+            return 'Wrong number of parameters to attribute filter';
+        }
         return true;
     }
     
@@ -63,6 +79,10 @@ locales - List of translation locale codes to filter on, separated by a colon (e
         if ( $this->limit > 0 )
         {
             $parameters['limit'] = $this->limit;
+        }
+        if ( !empty( $this->attribute_filter ) )
+        {
+            $parameters['attribute_filter'] = array( $this->attribute_filter );
         }
         if ( !empty( $this->locales ) )
         {
@@ -86,4 +106,5 @@ locales - List of translation locale codes to filter on, separated by a colon (e
     var $depth;
     var $ignore_visibility;
     var $locales;
+    var $attribute_filter;
 }
