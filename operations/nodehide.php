@@ -23,7 +23,7 @@ hidden - specify if the node (and sub nodes) should be hidden or revealed
             return "Unsupported parameter '{$unsupported_list[0]}' in operation";
         }
 
-        switch( $parm_array[ 'available' ] )
+        switch( $parm_array[ 'hidden' ] )
         {
             case 'true':
                 $this->hidden = true;
