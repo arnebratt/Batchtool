@@ -6,7 +6,7 @@ class nodealwaysavailableOperation extends BatchToolOperation
     function getHelpText()
     {
         return '
---operation="nodealwaysavailable;available=<true/false>"
+--operation="nodealwaysavailable;available=<true|false>"
 
 available - Set node as available for all languages or not
 ';
