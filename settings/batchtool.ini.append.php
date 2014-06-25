@@ -26,5 +26,5 @@ PHPFunctions[]
 PHPFunctions[]=trim
 UserFunctions[]
 UserFunctions[]=user_trim
-
+UserFunctions[]=change_word
 */ ?>

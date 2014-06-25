@@ -45,11 +45,13 @@ arguments - Arguments sent to the selected function, separated by a colon.
         {
             $function_list = $iniBT->variable( 'NodeChangeAttribute', 'UserFunctions' );
             $this->change_function = $parm_array[ 'userfunc' ];
+            $this->function_type = 'userfunc';
         }
         else
         {
             $function_list = $iniBT->variable( 'NodeChangeAttribute', 'PHPFunctions' );
             $this->change_function = $parm_array[ 'phpfunc' ];
+            $this->function_type = 'phpfunc';
         }
         if ( !in_array( $this->change_function, $function_list ) )
             return "Function '{$this->change_function}' not registered in batchtool.ini.\n";
@@ -81,6 +83,14 @@ arguments - Arguments sent to the selected function, separated by a colon.
             $value = $object_attribute->toString();
             $arg_array = str_replace( '{'.$key.'}', $value, $arg_array );
         }
+
+        // for userfunc only
+        if ( $this->function_type === 'userfunc' )
+        {
+            // add the old value as a last parameter
+            $arg_array['old_value'] = $old_value;
+        }
+
         $new_value = call_user_func_array( $this->change_function, $arg_array );
 
         if ( $new_value == $old_value )
@@ -119,4 +129,6 @@ arguments - Arguments sent to the selected function, separated by a colon.
     var $change_function;
     // Arguments for the function (in an array)
     var $arguments;
+    // type of used function (php or user)
+    private $function_type;
 }
