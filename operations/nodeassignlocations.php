@@ -7,8 +7,9 @@ class nodeassignlocationsOperation extends BatchToolOperation
     {
         return '
 --operation="nodeassignlocations;locations=<node_id,node_id...>"
- 
-locations - a colon separated list of new parent nodes to assign to this node
+
+Add new locations under the specified parent node id\'s
+locations - a colon separated list of new parent node id\'s to assign to this node
 ';
     }
  
@@ -35,19 +36,24 @@ locations - a colon separated list of new parent nodes to assign to this node
  
     // Assign locations to the given node
     // locations - an array of node IDs for new parent nodes
-    function runOperation( &$object )
+    function runOperation( &$node )
     {
-        $result = true;
-
-        require_once( 'kernel/classes/ezcontentobject.php' );
+        $db = eZDB::instance();
+        $db->begin();
 
         foreach ($this->locations as $location)
         {
-            $contentobject = $object->object();
-            $result = $result && $contentobject->AddLocation( $location, true );
+            $contentobject = $node->object();
+            $id = $contentobject->addLocation( $location, true );
+            if ( empty( $id ) )
+            {
+                $db->rollback();
+                return false;
+            }
         }
 
-        return $result;
+        $db->commit();
+        return true;
     }
  
     var $locations = array();

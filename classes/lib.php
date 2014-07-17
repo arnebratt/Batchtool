@@ -95,11 +95,10 @@ function importAttribute( $data, &$contentObjectAttribute )
 function addNodeAssignment( $content_object, $parent_node_id, $set_as_main_node = false )
 {
     $main_node_id = $content_object->attribute( 'main_node_id' );
-    $insertedNode =& $content_object->addLocation( $parent_node_id, true );
+    $insertedNode = $content_object->addLocation( $parent_node_id, true );
     // Now set it as published and fix main_node_id
     $insertedNode->setAttribute( 'contentobject_is_published', 1 );
-    $contentObject = eZContentObject::fetch( $objectID );
-    $parentContentObject = eZContentObject::fetchByNodeID( $parentMainNodeID );
+    $parentContentObject = eZContentObject::fetchByNodeID( $parent_node_id );
     if ( $set_as_main_node )
     {
         $main_node_id = $insertedNode->attribute( 'node_id' );
