@@ -38,18 +38,19 @@ locations - a colon separated list of new parent node id\'s to assign to this no
     // locations - an array of node IDs for new parent nodes
     function runOperation( &$node )
     {
+        $contentobject = $node->object();
+        $current_parent_ids = $contentobject->attribute( 'parent_nodes' );
+
         $db = eZDB::instance();
         $db->begin();
 
-        foreach ($this->locations as $location)
+        foreach ( $this->locations as $parent_id )
         {
-            $contentobject = $node->object();
-            $id = $contentobject->addLocation( $location, true );
-            if ( empty( $id ) )
+            if ( in_array( $parent_id, $current_parent_ids ) )
             {
-                $db->rollback();
-                return false;
+                continue;
             }
+            addNodeAssignment( $contentobject, $parent_id );
         }
 
         $db->commit();

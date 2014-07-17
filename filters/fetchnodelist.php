@@ -8,7 +8,7 @@ class fetchnodelistFilter extends BatchToolFilter
         return '
 --filter="fetchnodelist;parent=<parent>[;classname=<class id list>][;limit=<limit>][;offset=<offset>][;depth=<depth>][;ignore_visibility][;locales=<locale code list>][;attribute=<identifier>:<match_type>:<value>]"
 
-parent - The parent node id of the nodes you want to fetch (required)
+parent - The parent node id of the nodes you want to fetch (required, multiple id\'s separated by a colon)
 classname - A list of class identifiers separated by a colon
 limit - Limit the total number of nodes to fetch
 offset - The offset value for the node in the list of nodes to fetch
@@ -33,9 +33,14 @@ attribute - Filter on attribute values
             return "Unsupported parameter '{$unsupported_list[0]}' in filter";
 
         // Check for mandatory parameters
-        $this->parent_node_id = intval( $parm_array['parent'] );
-        if ( $this->parent_node_id == 0 )
-            return 'Missing or illegal parent node id';
+        $this->parent_node_id = explode( ':', $parm_array['parent'] );
+        foreach ( $this->parent_node_id as $node_id )
+        {
+            if ( intval( $node_id ) == 0 )
+                return "Parent node id '$node_id' is invalid";
+        }
+        if ( count( $this->parent_node_id ) == 0 )
+            return 'Missing parent node id';
 
         // Store values of optional parameters
         $this->limit = isset( $parm_array[ 'limit' ] ) ? intval( $parm_array[ 'limit' ] ) : -1;
@@ -69,8 +74,8 @@ attribute - Filter on attribute values
     // which must correspond to the type of objects operations in a job is made for
     function getObjectList()
     {
-        $parameters = array( 'parent_node_id' => $this->parent_node_id, 
-                        'class_filter_type' => 'include', 
+        $parameters = array( 'parent_node_id' => $this->parent_node_id,
+                        'class_filter_type' => 'include',
                         'class_filter_array' => $this->class_filter,
                         'offset' => $this->offset,
                         'depth' => $this->depth,
