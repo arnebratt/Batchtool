@@ -59,11 +59,26 @@ newline - Specifies if newline should be added to each line
                 {
                     if ( $object->hasAttribute( $field ) )
                     {
+                        // Found field name as an attribute of the content object php class
                         $data[] = $object->attribute( $field );
                     }
                     elseif ( $node->hasAttribute( $field ) )
                     {
+                        // Found field name as an attribute of the node php class
                         $data[] = $node->attribute( $field );
+                    }
+                    else
+                    {
+                        // Support sub fields by using / as a delimiter between field and subfield name
+                        $subfield = explode( '/', $field );
+                        if ( count( $subfield ) == 2 )
+                        {
+                            $content = $datamap[$subfield[0]]->content();
+                            if ( $content->hasAttribute( $subfield[1] ) )
+                            {
+                                $data[] = $content->attribute( $subfield[1] );
+                            }
+                        }
                     }
                 }
             }
