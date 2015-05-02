@@ -11,6 +11,7 @@ OperationList[]
 OperationList[]=nodelistname
 OperationList[]=nodecopy
 OperationList[]=nodemove
+OperationList[]=nodemerge
 OperationList[]=nodesetpriority
 OperationList[]=nodedelete
 OperationList[]=nodechangeattribute
