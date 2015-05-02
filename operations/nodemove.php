@@ -22,8 +22,14 @@ move_to_depth - Depth of content tree to move the node up to. Must always be abo
         if ( isset( $unsupported_list[0] ) )
             return "Unsupported parameter '{$unsupported_list[0]}' in operation";
 
-        $this->target_id = intval( $parm_array[ 'target' ] );
-        $this->move_to_depth = intval( $parm_array[ 'move_to_depth' ] );
+        if ( isset( $parm_array[ 'target' ] ) )
+        {
+            $this->target_id = intval( $parm_array[ 'target' ] );
+        }
+        if ( isset( $parm_array[ 'move_to_depth' ] ) )
+        {
+            $this->move_to_depth = intval( $parm_array[ 'move_to_depth' ] );
+        }
         if ( $this->target_id == 0 AND $this->move_to_depth == 0 )
             return 'Missing target node id and target depth to move to';
         if ( $this->target_id > 0 AND $this->move_to_depth > 0 )

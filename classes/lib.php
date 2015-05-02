@@ -267,6 +267,13 @@ function moveNode( $node, $new_parent_node_id )
                              'batchtool/move' );
         return false;
     }
+    $parent_id_array = $node->attribute( 'object' )->attribute( 'parent_nodes' );
+    if ( in_array( $new_parent_node_id, $parent_id_array ) )
+    {
+        eZDebug::writeError( "A node of this object with object id ".$node->attribute( 'ezcontentobject_id' )." already exist under new parent node with node id $new_parent_node_id",
+                             'batchtool/move' );
+        return false;
+    }
 
     return eZContentObjectTreeNodeOperations::move( $node_id, $new_parent_node_id );
 }
