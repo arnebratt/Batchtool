@@ -8,6 +8,8 @@ class nodemergeOperation extends BatchToolOperation
         return '
 --operation="nodemerge;target=<node id>;move_to_depth=<depth>"
 
+Warning: For experimental use only (url alias update code have shown some issues)!
+
 Will remove specified node, and set up a redirect to the new specified node (which need to exist)
 target - Node ID of the target node to move selected nodes under
 move_to_depth - Depth of content tree to move the node up to. Must always be above current depth!
