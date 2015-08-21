@@ -56,7 +56,22 @@ attribute - Filter on attribute values
         $attribute_filter = isset( $parm_array['attribute'] ) ? explode( ':', $parm_array['attribute'] ) : array();
         if ( count( $attribute_filter ) == 3 )
         {
-            if ( !in_array( $attribute_filter[1], array( '=', '!=', '<', '>', '<=', '>=', 'in', 'not_in', 'between', 'not_betweem', 'like' ) ) )
+            $matchtype_array = array( 'eq' => '=',
+                                      'ne' => '!=',
+                                      'lt' => '<',
+                                      'gt' => '>',
+                                      'le' => '<=',
+                                      'ge' => '>=',
+                                      'in' => 'in',
+                                      'not_in' => 'not_in',
+                                      'between' => 'between',
+                                      'not_betweem' => 'not_betweem',
+                                      'like' => 'like' );
+            if ( isset( $matchtype_array[$attribute_filter[1]] ) )
+            {
+                $attribute_filter[1] = $matchtype_array[$attribute_filter[1]];
+            }
+            else
             {
                 return 'Illegal match type parameter to attribute filter';
             }
