@@ -43,9 +43,11 @@ newline - Specifies if newline should be added to each line
     // and the program will continue on the next object
     function runOperation( &$node )
     {
-        $data = array( $node->attribute( 'name' ) );
-        
-        if ( !empty( $this->fields ) )
+        if ( empty( $this->fields ) )
+        {
+            $data = array( $node->attribute( 'name' ) );
+        }
+        else
         {
             $object = $node->attribute( 'object' );
             $datamap = $object->datamap();
