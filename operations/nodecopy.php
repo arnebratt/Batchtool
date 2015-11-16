@@ -40,13 +40,13 @@ target - Node ID of the target node to copy selected nodes under
             $siteaccess = $GLOBALS['eZCurrentAccess']['name'];
             $source = '--src-node-id=' . $node->attribute( 'node_id' );
             $destination = ' --dst-node-id=' . $this->target_id;
-            $command = "$php bin/php/ezsubtreecopy.php -s $siteaccess $source $destination";
+            $command = "$php bin/php/ezsubtreecopy.php -s $siteaccess $source $destination --all-versions --keep-creator --keep-time";
             exec( $command, $output, $return_var );
             return $return_var == 0;
         }
         else
         {
-            return copyObject( $object->attribute( 'object' ), false, $this->target_id );
+            return copyObject( $node->attribute( 'object' ), false, $this->target_id );
         }
     }
 

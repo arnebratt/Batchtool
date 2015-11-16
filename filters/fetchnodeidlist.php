@@ -6,9 +6,10 @@ class fetchnodeidlistFilter extends BatchToolFilter
     function getHelpText()
     {
         return '
---filter="fetchnodeidlist;node_ids=<node id list>"
+--filter="fetchnodeidlist;node_ids=<node id list>[;use_main_node]"
 
 node_ids - A list of node id numbers separated by a colon
+use_main_node - Returns main node instead of the selected node, if they are different
 ';
     }
 
@@ -18,7 +19,7 @@ node_ids - A list of node id numbers separated by a colon
     function setParameters( $parm_array )
     {
         // Make sure no unsupported parameters are specified
-        $supported_parameters = array( 'node_ids' );
+        $supported_parameters = array( 'node_ids', 'use_main_node' );
         $parm_keys = array_keys( $parm_array );
         $unsupported_list = array_diff( $parm_keys, $supported_parameters );
         if ( isset( $unsupported_list[0] ) )
@@ -36,6 +37,7 @@ node_ids - A list of node id numbers separated by a colon
             return 'No node ids specified';
         }
 
+        $this->use_main_node = isset( $parm_array['use_main_node'] );
         return true;
     }
     
@@ -49,9 +51,20 @@ node_ids - A list of node id numbers separated by a colon
         {
             $result = array( $result );
         }
+        if ( $this->use_main_node )
+        {
+            foreach ( $result as $key => $node )
+            {
+                if ( $node->attribute( 'node_id' ) != $node->attribute( 'main_node_id' ) )
+                {
+                    $result[$key] = eZFunctionHandler::execute( 'content', 'node', array( 'node_id' => $node->attribute( 'main_node_id' ) ) );
+                }
+            }
+        }
         return $result;
     }
 
     // Command line input parameters
     var $node_id_list;
+    var $use_main_node;
 }

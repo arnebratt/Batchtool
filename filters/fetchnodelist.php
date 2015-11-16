@@ -6,7 +6,7 @@ class fetchnodelistFilter extends BatchToolFilter
     function getHelpText()
     {
         return '
---filter="fetchnodelist;parent=<parent>[;classname=<class id list>][;limit=<limit>][;offset=<offset>][;depth=<depth>][;ignore_visibility][;locales=<locale code list>][;attribute=<identifier>:<match_type>:<value>]"
+--filter="fetchnodelist;parent=<parent>[;classname=<class id list>][;limit=<limit>][;offset=<offset>][;depth=<depth>][;ignore_visibility][;use_main_node][;locales=<locale code list>][;attribute=<identifier>:<match_type>:<value>][;use_main_node]"
 
 parent - The parent node id of the nodes you want to fetch (required, multiple id\'s separated by a colon)
 classname - A list of class identifiers separated by a colon
@@ -14,6 +14,7 @@ limit - Limit the total number of nodes to fetch
 offset - The offset value for the node in the list of nodes to fetch
 depth - Max level of depth to fetch nodes from (default is current folder only)
 ignore_visibility - Fetch also hidden nodes
+use_main_node - Returns main node instead of the selected node, if they are different
 locales - List of translation locale codes to filter on, separated by a colon (ex."nor-NO:eng-GB")
           The first locales parameter can be an optional "or" or "and", to specify the logic between the languages (default is "or")
 attribute - Filter on attribute values
@@ -49,6 +50,7 @@ attribute - Filter on attribute values
         if ( $this->depth == 0 )
             $this->depth = 1;
         $this->ignore_visibility = isset( $parm_array[ 'ignore_visibility' ] ) ? true : false;
+        $this->use_main_node = isset( $parm_array['use_main_node'] );
         $this->class_filter = isset( $parm_array['classname'] ) ? explode( ':', $parm_array['classname'] ) : array();
         $this->locales = isset( $parm_array['locales'] ) ? explode( ':', $parm_array['locales'] ) : array();
 
@@ -115,7 +117,19 @@ attribute - Filter on attribute values
                                                               'params' => array( 'or' => $is_or_logic,
                                                                                  'locales' => $this->locales ) );
         }
-        return eZFunctionHandler::execute( 'content', 'list', $parameters );
+        $result = eZFunctionHandler::execute( 'content', 'list', $parameters );
+
+        if ( $this->use_main_node )
+        {
+            foreach ( $result as $key => $node )
+            {
+                if ( $node->attribute( 'node_id' ) != $node->attribute( 'main_node_id' ) )
+                {
+                    $result[$key] = eZFunctionHandler::execute( 'content', 'node', array( 'node_id' => $node->attribute( 'main_node_id' ) ) );
+                }
+            }
+        }
+        return $result;
     }
 
     // Command line input parameters
@@ -125,6 +139,7 @@ attribute - Filter on attribute values
     var $offset;
     var $depth;
     var $ignore_visibility;
+    var $use_main_node;
     var $locales;
     var $attribute_filter;
 }
