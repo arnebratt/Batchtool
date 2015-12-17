@@ -6,9 +6,10 @@ class nodechangeattributeOperation extends BatchToolOperation
     function getHelpText()
     {
         return '
---operation="nodechangeattribute;attribute=<attribute>[;phpfunc=<function>][;userfunc=<function>][;arguments=<arguments>]"
+--operation="nodechangeattribute;attribute=<attribute>[;locale=<locale code>][;phpfunc=<function>][;userfunc=<function>][;arguments=<arguments>]"
 
 attribute - ID name of the attribute to do changes on
+locale - Locale code for the translation to update
 phpfunc - Name of the PHP function to use for changing the attribute
 userfunc - Name of the user function to use for changing the attribute
 (either phpfunc or userfunc must be included, but not both)
@@ -22,7 +23,7 @@ arguments - Arguments sent to the selected function, separated by a colon.
     function setParameters( $parm_array )
     {
         // Make sure no unsupported parameters are specified
-        $supported_parameters = array( 'attribute', 'phpfunc', 'userfunc', 'arguments' );
+        $supported_parameters = array( 'attribute', 'locale', 'phpfunc', 'userfunc', 'arguments' );
         $parm_keys = array_keys( $parm_array );
         $unsupported_list = array_diff( $parm_keys, $supported_parameters );
         if ( isset( $unsupported_list[0] ) )
@@ -33,6 +34,8 @@ arguments - Arguments sent to the selected function, separated by a colon.
         $this->attribute = $parm_array[ 'attribute' ];
         if ( empty( $this->attribute ) )
             return 'No node attribute specified';
+
+        $this->locale = isset( $parm_array['locale'] ) ? $parm_array['locale'] : false;
 
         $this->arguments = isset( $parm_array['arguments'] ) ? explode( ':', $parm_array['arguments'] ) : array();
 
@@ -67,7 +70,8 @@ arguments - Arguments sent to the selected function, separated by a colon.
 
     function runOperation( &$node )
     {
-        $datamap = $node->dataMap();
+        $content_object = $node->object();
+        $datamap = $content_object->fetchDataMap( false, $this->locale );
         $object_attribute = $datamap[$this->attribute];
         if ( !isset( $object_attribute ) )
         {
@@ -102,9 +106,8 @@ arguments - Arguments sent to the selected function, separated by a colon.
         $db = eZDB::instance();
         $db->begin();
         // Create new version
-        $content_object = $node->object();
         $content_object_id = $content_object->attribute( 'id' );
-        $version = $content_object->createNewVersion( false, true, $node->CurrentLanguage );
+        $version = $content_object->createNewVersion( false, true, $this->locale );
         $version->setAttribute( 'modified', time() );
         $version->setAttribute( 'status', 'EZ_VERSION_STATUS_DRAFT' );
         $version->store();
@@ -125,6 +128,8 @@ arguments - Arguments sent to the selected function, separated by a colon.
 
     // Attribute of the node that should be changed
     var $attribute;
+    // Locale to update
+    var $locale;
     // PHP or user function to use for changing the attribute
     var $change_function;
     // Arguments for the function (in an array)
