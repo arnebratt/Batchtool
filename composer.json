@@ -1,0 +1,21 @@
+{
+    "name": "informaticatrentina/Batchtool",
+    "version": "1.1",
+    "description": "Batchtool (FORK)",
+    "type": "ezpublish-legacy-extension",
+    "authors": [
+        {
+            "name": "Informatica Trentina SpA",
+            "homepage": "http://www.infotn.it"
+        },
+		 {
+            "name": "Arne Bakkebø",
+            "homepage": "http://projects.ez.no/users/community/arne_bakkeboe"
+        }
+    ],
+    "license": "GPL-2.0",
+    "minimum-stability": "stable",
+    "extra": {
+        "ezpublish-legacy-extension-name": "batchtool"
+    }
+}
