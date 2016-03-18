@@ -1,14 +1,10 @@
 {
-    "name": "informaticatrentina/batchtool",
+    "name": "arnebratt/Batchtool",
     "version": "1.3",
-    "description": "Batchtool (FORK)",
+    "description": "Arne Batchtool",
     "type": "ezpublish-legacy-extension",
     "authors": [
-        {
-            "name": "Informatica Trentina SpA",
-            "homepage": "http://www.infotn.it"
-        },
-		 {
+	{
             "name": "Arne Bakkebø",
             "homepage": "http://projects.ez.no/users/community/arne_bakkeboe"
         }
