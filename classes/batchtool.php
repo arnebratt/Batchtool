@@ -206,6 +206,17 @@ Enabled operations:
         $number_of_objects = count( $this->object_list );
         $cli->output( "Running operations on $number_of_objects objects." );
 
+        foreach( $this->operation_objects as $operation )
+        {
+            if ( method_exists( $operation, 'startOperations' ) )
+            {
+                if ( $operation->startOperations( count( $this->operation_objects ) ) )
+                {
+                    throw new Exception( "Start operation failed for operation '" . get_class( $operation ) . "'." );
+                }
+            }
+        }
+
         foreach ( $this->object_list as $object_id => $object )
         {
             // Run through all operations for this job
@@ -229,6 +240,14 @@ Enabled operations:
             {
                 $mem = intval( memory_get_usage() / 1024 / 1024 );
                 $cli->output( ( ( $result ) ? "Done operations" : "Operations failed" ) . " on object $object_id [{$this->total_count}/$number_of_objects] ($mem MB)" );
+            }
+        }
+
+        foreach( $this->operation_objects as $operation )
+        {
+            if ( method_exists( $operation, 'finishOperations' ) )
+            {
+                $operation->finishOperations();
             }
         }
     }

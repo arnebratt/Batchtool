@@ -9,6 +9,7 @@ FilterList[]=fetchnodelist
 # List of operations available
 OperationList[]
 OperationList[]=nodelistname
+OperationList[]=nodexmlexport
 OperationList[]=nodecopy
 OperationList[]=nodemove
 OperationList[]=nodemerge
