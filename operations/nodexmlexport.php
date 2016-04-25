@@ -31,7 +31,7 @@ format_output - show formatted output (newline/whitespace not included if this i
             return 'No fields given for xml export';
         }
         $this->headtag = isset( $parm_array[ 'head' ] ) ? $parm_array[ 'head' ] : '';
-        if ( empty( $this->fields ) )
+        if ( empty( $this->headtag ) )
         {
             return 'Missing name of root xml tag';
         }
