@@ -9,6 +9,8 @@ class nodexmlexportOperation extends BatchToolOperation
 
 Export node to an xml format
 fields - select the fields to output, separated by colon
+head - specify root tag of the xml output
+all_languages_fields - specify which fields to output for all translations of the object
 format_output - show formatted output (newline/whitespace not included if this is not specified)
 ';
     }
@@ -24,7 +26,15 @@ format_output - show formatted output (newline/whitespace not included if this i
         }
 
         $this->fields = isset( $parm_array[ 'fields' ] ) ? explode( ':', $parm_array[ 'fields' ] ) : array();
+        if ( empty( $this->fields ) )
+        {
+            return 'No fields given for xml export';
+        }
         $this->headtag = isset( $parm_array[ 'head' ] ) ? $parm_array[ 'head' ] : '';
+        if ( empty( $this->fields ) )
+        {
+            return 'Missing name of root xml tag';
+        }
         $this->all_languages_fields = isset( $parm_array[ 'all_languages_fields' ] ) ? explode( ':', $parm_array[ 'all_languages_fields' ] ) : array();
         $this->format_output = isset( $parm_array[ 'format_output' ] ) ? true : false;
 
@@ -37,16 +47,19 @@ format_output - show formatted output (newline/whitespace not included if this i
 
         $object = $node->attribute( 'object' );
         $datamap = $object->datamap();
-        $ingredient_tag = $this->root->appendChild( $this->dom->createElement( $object->attribute( 'class_identifier' ) ) );
+        $content_tag = $this->root->appendChild( $this->dom->createElement( $object->attribute( 'class_identifier' ) ) );
 
         foreach ( $this->fields as $field )
         {
-            $this->addDOMTag( $ingredient_tag, $field, $this->getValue( $node, $object, $datamap, $field ) );
+            if ( !$this->addCustomDOMTags( $content_tag, $node, $object, $datamap, $field ) )
+            {
+                $this->addDOMTag( $content_tag, $field, $this->getValue( $node, $object, $datamap, $field ) );
+            }
         }
 
         if ( count( $this->all_languages_fields ) )
         {
-            $locale_parent_tag = $ingredient_tag->appendChild( $this->dom->createElement( 'localizedData' ) );
+            $locale_parent_tag = $content_tag->appendChild( $this->dom->createElement( 'localizedData' ) );
             foreach ( $object->attribute( 'available_languages' ) as $locale )
             {
                 $node = eZFunctionHandler::execute( 'content', 'node', array( 'node_id' => $node->attribute( 'node_id' ),
@@ -110,6 +123,11 @@ format_output - show formatted output (newline/whitespace not included if this i
         return $result;
     }
 
+    protected function addCustomDOMTags( $parent_tag, $node, $object, $datamap, $field )
+    {
+        return false;
+    }
+
     protected function addDOMTag( $parent_tag, $tag_name, $value )
     {
         $value_tag = $parent_tag->appendChild( $this->dom->createElement( str_replace( '/', '_', $tag_name ) ) );
@@ -129,6 +147,7 @@ format_output - show formatted output (newline/whitespace not included if this i
             case 'ezobjectrelation':
             case 'ezobjectrelationlist':
             case 'ezkeyword':
+            case 'ezselection':
                 return $attribute->tostring();
             default:
                 break;
