@@ -43,8 +43,6 @@ format_output - show formatted output (newline/whitespace not included if this i
 
     function runOperation( &$node )
     {
-        $data = array();
-
         $object = $node->attribute( 'object' );
         $datamap = $object->datamap();
         $content_tag = $this->root->appendChild( $this->dom->createElement( $object->attribute( 'class_identifier' ) ) );
@@ -67,7 +65,6 @@ format_output - show formatted output (newline/whitespace not included if this i
                                                                        ) );
                 $object = $node->attribute( 'object' );
                 $datamap = $node->datamap();
-                $object_data = array();
                 $locale_tag = $locale_parent_tag->appendChild( $this->dom->createElement( 'localizedValues' ) );
                 foreach ( $this->all_languages_fields as $field )
                 {
