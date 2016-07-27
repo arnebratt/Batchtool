@@ -2,7 +2,7 @@
 
 /**
  * Function used for replaceing one word with another in given attribute.
- * Function requires three arguments to be passes as a command line parameters (word_from, word_to and exclude_words). In case when there are no excluded words, it is
+ * Function requires three arguments to be passed as command line parameters (word_from, word_to and exclude_words). In case when there are no excluded words, it is
  * required to put a colon after word_to argument.
  * php runcronjobs.php batchtool -ssweadmin --filter="fetchnodelist;parent=136;depth=2;locales=swe-SE;classname=recipe;limit=5" --operation="nodechangeattribute;attribute=name;userfunc=change_word;arguments=lax:laks:"
  * @param string $word_from
