@@ -17,6 +17,8 @@ arguments - Arguments sent to the selected function, separated by a colon.
             Arguments should match the parameters that the function requires.
             Any attribute identifier encased in {} in any argument will be 
             replaced by the actual string value from the specified attribute.
+            The substring ".semicolon." in any argument will be replaced by a ";".
+            The substring ".colon." in any argument will be replaced by a ":".
 ';
     }
 
@@ -38,6 +40,8 @@ arguments - Arguments sent to the selected function, separated by a colon.
         $this->locale = isset( $parm_array['locale'] ) ? $parm_array['locale'] : false;
 
         $this->arguments = isset( $parm_array['arguments'] ) ? explode( ':', $parm_array['arguments'] ) : array();
+        $this->arguments = str_replace( '.semicolon.', ';', $this->arguments );
+        $this->arguments = str_replace( '.colon.', ':', $this->arguments );
 
         // Find the function to call on each content object attribute
         if ( empty( $parm_array[ 'phpfunc' ] ) AND empty( $parm_array[ 'userfunc' ] ) )
