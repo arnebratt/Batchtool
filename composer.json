@@ -1,0 +1,17 @@
+{
+    "name": "arnebratt/Batchtool",
+    "version": "1.1",
+    "description": "Arne Batchtool",
+    "type": "ezpublish-legacy-extension",
+    "authors": [
+	{
+            "name": "Arne Bakkebø",
+            "homepage": "http://projects.ez.no/users/community/arne_bakkeboe"
+        }
+    ],
+    "license": "GPL-2.0",
+    "minimum-stability": "stable",
+    "extra": {
+        "ezpublish-legacy-extension-name": "batchtool"
+    }
+}
